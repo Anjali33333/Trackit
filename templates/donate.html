@@ -1,0 +1,115 @@
+{% extends "base.html" %}
+
+{% block title %}Department Fund Collection - TrackIt{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h4 class="card-title mb-0">Department Fund Collection</h4>
+            </div>
+            <div class="card-body">
+                <form id="donation-form">
+                    <div class="mb-3">
+                        <label for="amount" class="form-label">Amount (₹)</label>
+                        <input type="number" class="form-control" id="amount" name="amount" min="1" required>
+                    </div>
+                    <div class="d-grid">
+                        <button type="submit" class="btn btn-primary">Pay Now</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Payment Modal -->
+<div class="modal fade" id="payment-modal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Complete Payment</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div id="payment-form"></div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+<script>
+document.getElementById('donation-form').addEventListener('submit', function(e) {
+    e.preventDefault();
+    
+    const amount = document.getElementById('amount').value;
+    
+    // Create order
+    fetch('/student/donate', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        body: `amount=${amount}`
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.error) {
+            alert(data.error);
+            return;
+        }
+
+        // Configure Razorpay
+        const options = {
+            key: data.key,
+            amount: data.amount,
+            currency: data.currency,
+            name: 'Department Fund Collection',
+            description: 'Contribution to Department Fund',
+            order_id: data.order_id,
+            handler: function(response) {
+                // Verify payment
+                fetch('/student/donation/verify', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                    },
+                    body: `razorpay_payment_id=${response.razorpay_payment_id}&razorpay_order_id=${response.razorpay_order_id}&razorpay_signature=${response.razorpay_signature}`
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        alert('Payment successful!');
+                        window.location.href = '/student/dashboard';
+                    } else {
+                        alert('Payment verification failed. Please contact support.');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('Payment verification failed. Please contact support.');
+                });
+            },
+            prefill: {
+                name: '{{ session.name }}',
+                email: '{{ session.email }}'
+            },
+            theme: {
+                color: '#0d6efd'
+            }
+        };
+
+        const rzp = new Razorpay(options);
+        rzp.open();
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('Failed to create payment order. Please try again.');
+    });
+});
+</script>
+{% endblock %} 

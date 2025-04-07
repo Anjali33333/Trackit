@@ -1,0 +1,74 @@
+{% extends "base.html" %}
+
+{% block title %}Mark Attendance - TrackIt{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>Mark Student Attendance</h2>
+        <a href="{{ url_for('teacher_dashboard') }}" class="btn btn-primary">
+            <i class="fas fa-arrow-left"></i> Back to Dashboard
+        </a>
+    </div>
+
+    <div class="card">
+        <div class="card-body">
+            <form method="POST" action="{{ url_for('mark_attendance_page') }}">
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <label for="date" class="form-label">Date</label>
+                        <input type="date" class="form-control" id="date" name="date" required>
+                    </div>
+                    <div class="col-md-6">
+                        <label for="department" class="form-label">Department</label>
+                        <select class="form-select" id="department" name="department">
+                            <option value="">All Departments</option>
+                            {% for dept in departments %}
+                            <option value="{{ dept }}">{{ dept }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+
+                <div class="table-responsive">
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>Roll Number</th>
+                                <th>Name</th>
+                                <th>Department</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for student in students %}
+                            <tr>
+                                <td>{{ student.roll_number }}</td>
+                                <td>{{ student.name }}</td>
+                                <td>{{ student.department }}</td>
+                                <td>
+                                    <input type="hidden" name="student_id" value="{{ student.id }}">
+                                    <div class="btn-group" role="group">
+                                        <input type="radio" class="btn-check" name="status_{{ student.id }}" id="present_{{ student.id }}" value="Present" checked>
+                                        <label class="btn btn-outline-success" for="present_{{ student.id }}">Present</label>
+                                        
+                                        <input type="radio" class="btn-check" name="status_{{ student.id }}" id="absent_{{ student.id }}" value="Absent">
+                                        <label class="btn btn-outline-danger" for="absent_{{ student.id }}">Absent</label>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="text-end mt-3">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save"></i> Save Attendance
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %} 

@@ -1,0 +1,322 @@
+{% extends "base.html" %}
+
+{% block title %}Teacher Dashboard - TrackIt{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>Teacher Dashboard</h2>
+        <a href="{{ url_for('mark_attendance_page') }}" class="btn btn-success">
+            <i class="fas fa-calendar-check"></i> Mark Attendance
+        </a>
+    </div>
+    
+    <!-- Search Box -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <form method="GET" action="{{ url_for('student_search') }}" class="row g-3">
+                <div class="col-md-8">
+                    <div class="input-group">
+                        <input type="text" class="form-control" id="search" name="search" placeholder="Search students by name...">
+                        <button class="btn btn-primary" type="submit">Search</button>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <a href="{{ url_for('teacher_dashboard') }}" class="btn btn-secondary">Clear Search</a>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <!-- Statistics Cards -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card bg-primary text-white">
+                <div class="card-body">
+                    <h5 class="card-title">Total Students</h5>
+                    <p class="card-text display-6">{{ students|length }}</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-success text-white">
+                <div class="card-body">
+                    <h5 class="card-title">Total Donations</h5>
+                    <p class="card-text display-6">₹{{ total_donations }}</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-warning text-dark">
+                <div class="card-body">
+                    <h5 class="card-title">Pending Leave Requests</h5>
+                    <p class="card-text display-6">{{ leave_requests|selectattr('status', 'equalto', 'pending')|list|length }}</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-info text-white">
+                <div class="card-body">
+                    <h5 class="card-title">Recent Donations</h5>
+                    <p class="card-text display-6">{{ recent_donations|length }}</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Recent Donations -->
+    <div class="card mb-4">
+        <div class="card-header">
+            <h5 class="mb-0">Recent Donations</h5>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>Student Name</th>
+                            <th>Roll Number</th>
+                            <th>Department</th>
+                            <th>Amount</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for donation in recent_donations %}
+                        <tr>
+                            <td>{{ donation.donation_date.strftime('%Y-%m-%d') }}</td>
+                            <td>{{ donation.donor.name }}</td>
+                            <td>{{ donation.donor.roll_number }}</td>
+                            <td>{{ donation.donor.department }}</td>
+                            <td>₹{{ donation.amount }}</td>
+                            <td>
+                                <span class="badge bg-{{ 'success' if donation.status == 'completed' else 'danger' }}">
+                                    {{ donation.status }}
+                                </span>
+                            </td>
+                        </tr>
+                        {% else %}
+                        <tr>
+                            <td colspan="6" class="text-center">No donations found</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Student List -->
+    <div class="card mb-4">
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <h5 class="mb-0">Student List</h5>
+            <button type="button" class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#addStudentModal">
+                Add Student
+            </button>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>Roll Number</th>
+                            <th>Department</th>
+                            <th>Email</th>
+                            <th>Phone</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for student in students %}
+                        <tr>
+                            <td>{{ student.name }}</td>
+                            <td>{{ student.roll_number }}</td>
+                            <td>{{ student.department }}</td>
+                            <td>{{ student.email }}</td>
+                            <td>{{ student.phone }}</td>
+                            <td>
+                                <button type="button" class="btn btn-sm btn-info" data-bs-toggle="modal" data-bs-target="#editStudentModal{{ student.id }}">
+                                    Edit
+                                </button>
+                                <button type="button" class="btn btn-sm btn-danger" data-bs-toggle="modal" data-bs-target="#deleteStudentModal{{ student.id }}">
+                                    Delete
+                                </button>
+                            </td>
+                        </tr>
+                        {% else %}
+                        <tr>
+                            <td colspan="6" class="text-center">No students found</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Leave Requests -->
+    <div class="card mb-4">
+        <div class="card-header">
+            <h5 class="mb-0">Leave Requests</h5>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>Student</th>
+                            <th>Start Date</th>
+                            <th>End Date</th>
+                            <th>Reason</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for request in leave_requests %}
+                        <tr>
+                            <td>{{ request.student.name }}</td>
+                            <td>{{ request.start_date.strftime('%Y-%m-%d') }}</td>
+                            <td>{{ request.end_date.strftime('%Y-%m-%d') }}</td>
+                            <td>{{ request.reason }}</td>
+                            <td>
+                                <span class="badge bg-{{ 'success' if request.status == 'approved' else 'danger' if request.status == 'rejected' else 'warning' }}">
+                                    {{ request.status }}
+                                </span>
+                            </td>
+                            <td>
+                                {% if request.status == 'pending' %}
+                                <form method="POST" action="{{ url_for('update_leave') }}" class="d-inline">
+                                    <input type="hidden" name="leave_id" value="{{ request.id }}">
+                                    <input type="hidden" name="status" value="approved">
+                                    <button type="submit" class="btn btn-sm btn-success">Approve</button>
+                                </form>
+                                <form method="POST" action="{{ url_for('update_leave') }}" class="d-inline">
+                                    <input type="hidden" name="leave_id" value="{{ request.id }}">
+                                    <input type="hidden" name="status" value="rejected">
+                                    <button type="submit" class="btn btn-sm btn-danger">Reject</button>
+                                </form>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% else %}
+                        <tr>
+                            <td colspan="6" class="text-center">No leave requests found</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Add Student Modal -->
+<div class="modal fade" id="addStudentModal" tabindex="-1" aria-labelledby="addStudentModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="addStudentModalLabel">Add New Student</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form method="POST" action="{{ url_for('add_student') }}">
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="name" class="form-label">Full Name</label>
+                        <input type="text" class="form-control" id="name" name="name" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="email" class="form-label">Email</label>
+                        <input type="email" class="form-control" id="email" name="email" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="roll_number" class="form-label">Roll Number</label>
+                        <input type="text" class="form-control" id="roll_number" name="roll_number" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="department" class="form-label">Department</label>
+                        <input type="text" class="form-control" id="department" name="department" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="phone" class="form-label">Phone Number</label>
+                        <input type="tel" class="form-control" id="phone" name="phone" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="password" class="form-label">Password</label>
+                        <input type="password" class="form-control" id="password" name="password" required>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Add Student</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Edit Student Modals -->
+{% for student in students %}
+<div class="modal fade" id="editStudentModal{{ student.id }}" tabindex="-1" aria-labelledby="editStudentModalLabel{{ student.id }}" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="editStudentModalLabel{{ student.id }}">Edit Student</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form method="POST" action="{{ url_for('edit_student', student_id=student.id) }}">
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="name{{ student.id }}" class="form-label">Full Name</label>
+                        <input type="text" class="form-control" id="name{{ student.id }}" name="name" value="{{ student.name }}" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="roll_number{{ student.id }}" class="form-label">Roll Number</label>
+                        <input type="text" class="form-control" id="roll_number{{ student.id }}" name="roll_number" value="{{ student.roll_number }}" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="department{{ student.id }}" class="form-label">Department</label>
+                        <input type="text" class="form-control" id="department{{ student.id }}" name="department" value="{{ student.department }}" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="phone{{ student.id }}" class="form-label">Phone Number</label>
+                        <input type="tel" class="form-control" id="phone{{ student.id }}" name="phone" value="{{ student.phone }}" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="password{{ student.id }}" class="form-label">New Password (leave blank to keep current)</label>
+                        <input type="password" class="form-control" id="password{{ student.id }}" name="password">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Save Changes</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Delete Student Modals -->
+<div class="modal fade" id="deleteStudentModal{{ student.id }}" tabindex="-1" aria-labelledby="deleteStudentModalLabel{{ student.id }}" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="deleteStudentModalLabel{{ student.id }}">Delete Student</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p>Are you sure you want to delete {{ student.name }}? This action cannot be undone.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <form method="POST" action="{{ url_for('delete_student', student_id=student.id) }}" class="d-inline">
+                    <button type="submit" class="btn btn-danger">Delete</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endfor %}
+{% endblock %} 

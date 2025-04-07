@@ -1,0 +1,149 @@
+{% extends "base.html" %}
+
+{% block title %}Admin Dashboard - Attendance System{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-12 mb-4">
+        <div class="d-flex justify-content-between align-items-center">
+            <h2>Admin Dashboard</h2>
+            <div>
+                <a href="{{ url_for('admin_students') }}" class="btn btn-primary me-2">
+                    <i class="fas fa-users"></i> Manage Students
+                </a>
+                
+                <a href="{{ url_for('admin_attendance') }}" class="btn btn-success">
+                    <i class="fas fa-calendar-check"></i> View Attendance
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Statistics Cards -->
+<div class="row mb-4">
+    <div class="col-md-3">
+        <div class="card bg-primary text-white">
+            <div class="card-body">
+                <h5 class="card-title">Total Students</h5>
+                <h2 class="card-text">{{ total_students }}</h2>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card bg-success text-white">
+            <div class="card-body">
+                <h5 class="card-title">Total Teachers</h5>
+                <h2 class="card-text">{{ total_teachers }}</h2>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card bg-info text-white">
+            <div class="card-body">
+                <h5 class="card-title">Total Attendance Records</h5>
+                <h2 class="card-text">{{ total_attendance }}</h2>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card bg-warning text-white">
+            <div class="card-body">
+                <h5 class="card-title">Total Leave Requests</h5>
+                <h2 class="card-text">{{ total_leave_requests }}</h2>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <!-- Recent Attendance -->
+    <div class="col-md-6 mb-4">
+        <div class="card">
+            <div class="card-header">
+                <h4 class="card-title mb-0">Recent Attendance Records</h4>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>Student</th>
+                                <th>Date</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for attendance in recent_attendance %}
+                            <tr>
+                                <td>{{ attendance.student.name }}</td>
+                                <td>{{ attendance.date.strftime('%Y-%m-%d') }}</td>
+                                <td>
+                                    <span class="badge {% if attendance.status == 'Present' %}bg-success{% else %}bg-danger{% endif %}">
+                                        {{ attendance.status }}
+                                    </span>
+                                </td>
+                            </tr>
+                            {% else %}
+                            <tr>
+                                <td colspan="3" class="text-center">No recent attendance records.</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Student Statistics -->
+    <div class="col-md-6 mb-4">
+        <div class="card">
+            <div class="card-header">
+                <h4 class="card-title mb-0">Student Attendance Statistics</h4>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>Student</th>
+                                <th>Total Classes</th>
+                                <th>Present</th>
+                                <th>Absent</th>
+                                <th>Attendance %</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for stat in student_stats %}
+                            <tr>
+                                <td>{{ stat.student.name }}</td>
+                                <td>{{ stat.attendance_count }}</td>
+                                <td>{{ stat.present_count }}</td>
+                                <td>{{ stat.absent_count }}</td>
+                                <td>
+                                    <div class="progress" style="height: 20px;">
+                                        <div class="progress-bar {% if stat.attendance_percentage >= 75 %}bg-success{% elif stat.attendance_percentage >= 50 %}bg-warning{% else %}bg-danger{% endif %}" 
+                                             role="progressbar" 
+                                             style="width: {{ stat.attendance_percentage }}%"
+                                             aria-valuenow="{{ stat.attendance_percentage }}" 
+                                             aria-valuemin="0" 
+                                             aria-valuemax="100">
+                                            {{ stat.attendance_percentage }}%
+                                        </div>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% else %}
+                            <tr>
+                                <td colspan="5" class="text-center">No student statistics available.</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

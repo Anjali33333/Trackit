@@ -1,0 +1,61 @@
+/* Custom styles */
+.text-primary-600 {
+    color: #0284c7;
+}
+
+.bg-primary-600 {
+    background-color: #0284c7;
+}
+
+.hover\:bg-primary-700:hover {
+    background-color: #0369a1;
+}
+
+.focus\:ring-primary-500:focus {
+    --tw-ring-color: #0ea5e9;
+}
+
+.focus\:border-primary-500:focus {
+    border-color: #0ea5e9;
+}
+
+/* Animations */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.animate-fade-in {
+    animation: fadeIn 0.5s ease-out;
+}
+
+/* Form styles */
+input:focus, select:focus, textarea:focus {
+    outline: none;
+    border-color: #0ea5e9;
+    box-shadow: 0 0 0 2px rgba(14, 165, 233, 0.2);
+}
+
+/* Table styles */
+.table-hover tr:hover {
+    background-color: #f8fafc;
+}
+
+/* Button styles */
+.btn-primary {
+    transition: all 0.2s ease;
+}
+
+.btn-primary:hover {
+    transform: translateY(-1px);
+}
+
+.btn-primary:active {
+    transform: translateY(0);
+} 
