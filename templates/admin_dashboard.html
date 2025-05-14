@@ -3,147 +3,235 @@
 {% block title %}Admin Dashboard - Attendance System{% endblock %}
 
 {% block content %}
-<div class="row">
-    <div class="col-md-12 mb-4">
-        <div class="d-flex justify-content-between align-items-center">
-            <h2>Admin Dashboard</h2>
-            <div>
-                <a href="{{ url_for('admin_students') }}" class="btn btn-primary me-2">
-                    <i class="fas fa-users"></i> Manage Students
-                </a>
+<div class="container mt-4">
+    <h2>Admin Dashboard</h2>
+    
+    <!-- Quick Actions -->
+    <div class="card mb-4">
+        <div class="card-header">
+            <h4>Quick Actions</h4>
+        </div>
+        <div class="card-body">
+            <form action="{{ url_for('delete_teacher_by_email') }}" method="POST" class="row g-3 align-items-end" id="deleteTeacherForm">
+                <div class="col-md-6">
+                    <label for="email" class="form-label">Search Teacher by Email</label>
+                    <input type="email" class="form-control" id="email" name="email" placeholder="Enter teacher's email" required>
+                    <div id="teacherInfo" class="mt-2" style="display: none;"></div>
+                </div>
+                <div class="col-md-2">
+                    <button type="button" class="btn btn-info" onclick="checkTeacher()">Check Teacher</button>
+                    <button type="submit" class="btn btn-danger" id="deleteButton" style="display: none;" onclick="return confirm('Are you sure you want to delete this teacher? This action cannot be undone.')">Delete Teacher</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+    function checkTeacher() {
+        const email = document.getElementById('email').value;
+        if (!email) {
+            alert('Please enter an email address');
+            return;
+        }
+
+        fetch(`/admin/teacher/check/${email}`)
+            .then(response => response.json())
+            .then(data => {
+                const teacherInfo = document.getElementById('teacherInfo');
+                const deleteButton = document.getElementById('deleteButton');
                 
-                <a href="{{ url_for('admin_attendance') }}" class="btn btn-success">
-                    <i class="fas fa-calendar-check"></i> View Attendance
-                </a>
+                if (data.exists) {
+                    teacherInfo.innerHTML = `
+                        <div class="alert alert-info">
+                            <strong>Teacher Found:</strong><br>
+                            Name: ${data.name}<br>
+                            Department: ${data.department}
+                        </div>
+                    `;
+                    teacherInfo.style.display = 'block';
+                    deleteButton.style.display = 'inline-block';
+                } else {
+                    teacherInfo.innerHTML = `
+                        <div class="alert alert-warning">
+                            No teacher found with this email address.
+                        </div>
+                    `;
+                    teacherInfo.style.display = 'block';
+                    deleteButton.style.display = 'none';
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Error checking teacher. Please try again.');
+            });
+    }
+    </script>
+    
+    <!-- Statistics Cards -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card bg-primary text-white">
+                <div class="card-body">
+                    <h5 class="card-title">Total Students</h5>
+                    <p class="card-text display-4">{{ total_students }}</p>
+                </div>
             </div>
         </div>
-    </div>
-</div>
-
-<!-- Statistics Cards -->
-<div class="row mb-4">
-    <div class="col-md-3">
-        <div class="card bg-primary text-white">
-            <div class="card-body">
-                <h5 class="card-title">Total Students</h5>
-                <h2 class="card-text">{{ total_students }}</h2>
+        <div class="col-md-3">
+            <div class="card bg-success text-white">
+                <div class="card-body">
+                    <h5 class="card-title">Total Teachers</h5>
+                    <p class="card-text display-4">{{ total_teachers }}</p>
+                </div>
             </div>
         </div>
-    </div>
-    <div class="col-md-3">
-        <div class="card bg-success text-white">
-            <div class="card-body">
-                <h5 class="card-title">Total Teachers</h5>
-                <h2 class="card-text">{{ total_teachers }}</h2>
+        <div class="col-md-3">
+            <div class="card bg-info text-white">
+                <div class="card-body">
+                    <h5 class="card-title">Total Attendance Records</h5>
+                    <p class="card-text display-4">{{ total_attendance }}</p>
+                </div>
             </div>
         </div>
-    </div>
-    <div class="col-md-3">
-        <div class="card bg-info text-white">
-            <div class="card-body">
-                <h5 class="card-title">Total Attendance Records</h5>
-                <h2 class="card-text">{{ total_attendance }}</h2>
-            </div>
-        </div>
-    </div>
-    <div class="col-md-3">
-        <div class="card bg-warning text-white">
-            <div class="card-body">
-                <h5 class="card-title">Total Leave Requests</h5>
-                <h2 class="card-text">{{ total_leave_requests }}</h2>
-            </div>
-        </div>
-    </div>
-</div>
-
-<div class="row">
-    <!-- Recent Attendance -->
-    <div class="col-md-6 mb-4">
-        <div class="card">
-            <div class="card-header">
-                <h4 class="card-title mb-0">Recent Attendance Records</h4>
-            </div>
-            <div class="card-body">
-                <div class="table-responsive">
-                    <table class="table table-striped">
-                        <thead>
-                            <tr>
-                                <th>Student</th>
-                                <th>Date</th>
-                                <th>Status</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for attendance in recent_attendance %}
-                            <tr>
-                                <td>{{ attendance.student.name }}</td>
-                                <td>{{ attendance.date.strftime('%Y-%m-%d') }}</td>
-                                <td>
-                                    <span class="badge {% if attendance.status == 'Present' %}bg-success{% else %}bg-danger{% endif %}">
-                                        {{ attendance.status }}
-                                    </span>
-                                </td>
-                            </tr>
-                            {% else %}
-                            <tr>
-                                <td colspan="3" class="text-center">No recent attendance records.</td>
-                            </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
+        <div class="col-md-3">
+            <div class="card bg-warning text-white">
+                <div class="card-body">
+                    <h5 class="card-title">Total Leave Requests</h5>
+                    <p class="card-text display-4">{{ total_leave_requests }}</p>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Student Statistics -->
-    <div class="col-md-6 mb-4">
-        <div class="card">
-            <div class="card-header">
-                <h4 class="card-title mb-0">Student Attendance Statistics</h4>
-            </div>
-            <div class="card-body">
-                <div class="table-responsive">
-                    <table class="table table-striped">
-                        <thead>
-                            <tr>
-                                <th>Student</th>
-                                <th>Total Classes</th>
-                                <th>Present</th>
-                                <th>Absent</th>
-                                <th>Attendance %</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for stat in student_stats %}
-                            <tr>
-                                <td>{{ stat.student.name }}</td>
-                                <td>{{ stat.attendance_count }}</td>
-                                <td>{{ stat.present_count }}</td>
-                                <td>{{ stat.absent_count }}</td>
-                                <td>
-                                    <div class="progress" style="height: 20px;">
-                                        <div class="progress-bar {% if stat.attendance_percentage >= 75 %}bg-success{% elif stat.attendance_percentage >= 50 %}bg-warning{% else %}bg-danger{% endif %}" 
-                                             role="progressbar" 
-                                             style="width: {{ stat.attendance_percentage }}%"
-                                             aria-valuenow="{{ stat.attendance_percentage }}" 
-                                             aria-valuemin="0" 
-                                             aria-valuemax="100">
-                                            {{ stat.attendance_percentage }}%
+    <!-- Department-wise Statistics -->
+    {% for dept in departments %}
+    <div class="card mb-4">
+        <div class="card-header">
+            <h3>{{ dept }} Department</h3>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <!-- Students -->
+                <div class="col-md-6">
+                    <h4>Students</h4>
+                    <div class="table-responsive">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>Name</th>
+                                    <th>Roll Number</th>
+                                    <th>Email</th>
+                                    <th>Phone</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for student in students_by_dept[dept] %}
+                                <tr>
+                                    <td>{{ student.name }}</td>
+                                    <td>{{ student.roll_number }}</td>
+                                    <td>{{ student.email }}</td>
+                                    <td>{{ student.phone }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Teachers -->
+                <div class="col-md-6">
+                    <h4>Teachers</h4>
+                    <div class="table-responsive">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>Name</th>
+                                    <th>Email</th>
+                                    <th>Phone</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for teacher in teachers_by_dept[dept] %}
+                                <tr>
+                                    <td>{{ teacher.name }}</td>
+                                    <td>{{ teacher.email }}</td>
+                                    <td>{{ teacher.phone }}</td>
+                                    <td>
+                                        <button type="button" class="btn btn-danger btn-sm" data-bs-toggle="modal" data-bs-target="#deleteTeacherModal{{ teacher.id }}">
+                                            Delete
+                                        </button>
+                                    </td>
+                                </tr>
+
+                                <!-- Delete Teacher Modal -->
+                                <div class="modal fade" id="deleteTeacherModal{{ teacher.id }}" tabindex="-1">
+                                    <div class="modal-dialog">
+                                        <div class="modal-content">
+                                            <div class="modal-header">
+                                                <h5 class="modal-title">Delete Teacher</h5>
+                                                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                            </div>
+                                            <div class="modal-body">
+                                                <p>Are you sure you want to delete this teacher? This action cannot be undone.</p>
+                                                <p><strong>Teacher Name:</strong> {{ teacher.name }}</p>
+                                                <p><strong>Department:</strong> {{ teacher.department }}</p>
+                                            </div>
+                                            <div class="modal-footer">
+                                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                                                <form action="{{ url_for('delete_teacher', teacher_id=teacher.id) }}" method="POST" style="display: inline;">
+                                                    <button type="submit" class="btn btn-danger">Delete</button>
+                                                </form>
+                                            </div>
                                         </div>
                                     </div>
-                                </td>
-                            </tr>
-                            {% else %}
-                            <tr>
-                                <td colspan="5" class="text-center">No student statistics available.</td>
-                            </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
+                                </div>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
+            </div>
+
+            <!-- Attendance Statistics -->
+            <h4 class="mt-4">Attendance Statistics</h4>
+            <div class="table-responsive">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Student</th>
+                            <th>Total Attendance</th>
+                            <th>Present</th>
+                            <th>Absent</th>
+                            <th>Attendance %</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for stat in student_stats_by_dept[dept] %}
+                        <tr>
+                            <td>{{ stat.student.name }}</td>
+                            <td>{{ stat.attendance_count }}</td>
+                            <td>{{ stat.present_count }}</td>
+                            <td>{{ stat.absent_count }}</td>
+                            <td>
+                                <div class="progress">
+                                    <div class="progress-bar {% if stat.attendance_percentage >= 75 %}bg-success{% elif stat.attendance_percentage >= 50 %}bg-warning{% else %}bg-danger{% endif %}" 
+                                         role="progressbar" 
+                                         style="width: {{ stat.attendance_percentage }}%"
+                                         aria-valuenow="{{ stat.attendance_percentage }}" 
+                                         aria-valuemin="0" 
+                                         aria-valuemax="100">
+                                        {{ stat.attendance_percentage }}%
+                                    </div>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
             </div>
         </div>
     </div>
+    {% endfor %}
 </div>
 {% endblock %} 

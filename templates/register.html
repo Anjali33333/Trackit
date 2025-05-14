@@ -29,21 +29,28 @@
                     </div>
                     <div class="mb-3">
                         <label for="user_type" class="form-label">User Type</label>
-                        <select class="form-select" id="user_type" name="user_type" required onchange="toggleStudentFields()">
+                        <select class="form-select" id="user_type" name="user_type" required onchange="toggleFields()">
                             <option value="Student">Student</option>
                             <option value="Teacher">Teacher</option>
                         </select>
                     </div>
                     
-                    <!-- Student-specific fields (shown/hidden based on user type) -->
+                    <!-- Department selection for both students and teachers -->
+                    <div class="mb-3">
+                        <label for="department" class="form-label">Department</label>
+                        <select class="form-control" id="department" name="department" required>
+                            <option value="">Select Department</option>
+                            <option value="MCA">MCA</option>
+                            <option value="MBA">MBA</option>
+                            <option value="M.COM">M.COM</option>
+                        </select>
+                    </div>
+                    
+                    <!-- Student-specific fields -->
                     <div id="student-fields" style="display: none;">
                         <div class="mb-3">
                             <label for="roll_number" class="form-label">Roll Number</label>
                             <input type="text" class="form-control" id="roll_number" name="roll_number">
-                        </div>
-                        <div class="mb-3">
-                            <label for="department" class="form-label">Department</label>
-                            <input type="text" class="form-control" id="department" name="department">
                         </div>
                         <div class="mb-3">
                             <label for="phone" class="form-label">Phone Number</label>
@@ -67,17 +74,23 @@
 document.addEventListener('DOMContentLoaded', function() {
     const userTypeSelect = document.getElementById('user_type');
     const studentFields = document.getElementById('student-fields');
+    const rollNumberField = document.getElementById('roll_number');
+    const phoneField = document.getElementById('phone');
 
-    function toggleStudentFields() {
+    function toggleFields() {
         if (userTypeSelect.value === 'Student') {
             studentFields.style.display = 'block';
+            rollNumberField.required = true;
+            phoneField.required = true;
         } else {
             studentFields.style.display = 'none';
+            rollNumberField.required = false;
+            phoneField.required = false;
         }
     }
 
-    userTypeSelect.addEventListener('change', toggleStudentFields);
-    toggleStudentFields(); // Call once on page load
+    userTypeSelect.addEventListener('change', toggleFields);
+    toggleFields(); // Call once on page load
 });
 </script>
 {% endblock %} 

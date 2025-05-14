@@ -3,29 +3,398 @@
 {% block title %}Student Dashboard - TrackIt{% endblock %}
 
 {% block content %}
+<style>
+    :root {
+        --primary-gradient: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+        --secondary-gradient: linear-gradient(135deg, #3b82f6 0%, #2dd4bf 100%);
+        --success-gradient: linear-gradient(135deg, #10b981 0%, #059669 100%);
+        --warning-gradient: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+        --danger-gradient: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+        --card-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        --hover-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+    }
+
+    .dashboard-card {
+        background: rgba(255, 255, 255, 0.9);
+        backdrop-filter: blur(10px);
+        border: none;
+        border-radius: 1.5rem;
+        box-shadow: var(--card-shadow);
+        transition: all 0.3s ease;
+        overflow: hidden;
+        position: relative;
+    }
+
+    .dashboard-card:hover {
+        transform: translateY(-5px);
+        box-shadow: var(--hover-shadow);
+    }
+
+    .dashboard-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(45deg, rgba(99, 102, 241, 0.1), transparent);
+        opacity: 0;
+        transition: opacity 0.3s ease;
+    }
+
+    .dashboard-card:hover::before {
+        opacity: 1;
+    }
+
+    .card-header {
+        background: var(--primary-gradient);
+        color: white;
+        border-bottom: none;
+        padding: 1.5rem;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .card-header::after {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(45deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0) 100%);
+        transform: translateX(-100%);
+        transition: transform 0.6s ease;
+    }
+
+    .card-header:hover::after {
+        transform: translateX(100%);
+    }
+
+    .card-title {
+        font-weight: 600;
+        margin: 0;
+        font-size: 1.1rem;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+    }
+
+    .card-title i {
+        font-size: 1.2rem;
+        background: rgba(255, 255, 255, 0.2);
+        padding: 0.75rem;
+        border-radius: 0.75rem;
+        backdrop-filter: blur(5px);
+    }
+
+    .welcome-card {
+        background: var(--primary-gradient);
+        color: white;
+        border-radius: 1.5rem;
+        padding: 2.5rem;
+        margin-bottom: 2rem;
+        box-shadow: var(--hover-shadow);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .welcome-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(45deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0) 100%);
+        animation: shine 3s infinite;
+    }
+
+    .welcome-card h4 {
+        font-weight: 700;
+        margin-bottom: 1rem;
+        font-size: 1.75rem;
+        text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+
+    .welcome-card .btn {
+        background: rgba(255, 255, 255, 0.2);
+        border: 1px solid rgba(255, 255, 255, 0.3);
+        color: white;
+        transition: all 0.3s ease;
+        backdrop-filter: blur(5px);
+        padding: 0.75rem 1.5rem;
+        border-radius: 1rem;
+    }
+
+    .welcome-card .btn:hover {
+        background: rgba(255, 255, 255, 0.3);
+        transform: translateY(-2px);
+        box-shadow: var(--card-shadow);
+    }
+
+    .table {
+        margin-bottom: 0;
+    }
+
+    .table th {
+        font-weight: 600;
+        color: #4b5563;
+        border-top: none;
+        padding: 1.25rem 1rem;
+        background: rgba(99, 102, 241, 0.05);
+        border-bottom: 2px solid rgba(99, 102, 241, 0.1);
+    }
+
+    .table td {
+        padding: 1.25rem 1rem;
+        vertical-align: middle;
+        border-color: rgba(99, 102, 241, 0.1);
+        transition: all 0.3s ease;
+    }
+
+    .table tbody tr {
+        transition: all 0.3s ease;
+    }
+
+    .table tbody tr:hover {
+        background: rgba(99, 102, 241, 0.05);
+        transform: scale(1.01);
+    }
+
+    .badge {
+        padding: 0.5em 0.75em;
+        font-weight: 500;
+        border-radius: 0.75rem;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .badge.bg-success {
+        background: var(--success-gradient) !important;
+    }
+
+    .badge.bg-warning {
+        background: var(--warning-gradient) !important;
+    }
+
+    .badge.bg-danger {
+        background: var(--danger-gradient) !important;
+    }
+
+    .btn {
+        padding: 0.75rem 1.5rem;
+        border-radius: 1rem;
+        font-weight: 500;
+        transition: all 0.3s ease;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .btn-primary {
+        background: var(--primary-gradient);
+        border: none;
+    }
+
+    .btn-primary:hover {
+        transform: translateY(-2px);
+        box-shadow: var(--card-shadow);
+    }
+
+    .btn-light {
+        background: rgba(255, 255, 255, 0.9);
+        border: 1px solid rgba(99, 102, 241, 0.1);
+        color: #4b5563;
+    }
+
+    .btn-light:hover {
+        background: white;
+        transform: translateY(-2px);
+        box-shadow: var(--card-shadow);
+    }
+
+    .modal-content {
+        border: none;
+        border-radius: 1.5rem;
+        box-shadow: var(--hover-shadow);
+        background: rgba(255, 255, 255, 0.95);
+        backdrop-filter: blur(10px);
+    }
+
+    .modal-header {
+        background: var(--primary-gradient);
+        color: white;
+        border-bottom: none;
+        border-radius: 1.5rem 1.5rem 0 0;
+        padding: 1.5rem;
+    }
+
+    .modal-footer {
+        border-top: none;
+        padding: 1.5rem;
+        background: rgba(255, 255, 255, 0.5);
+        border-radius: 0 0 1.5rem 1.5rem;
+    }
+
+    .form-control {
+        border-radius: 1rem;
+        padding: 0.75rem 1rem;
+        border: 2px solid rgba(99, 102, 241, 0.1);
+        transition: all 0.3s ease;
+        background: rgba(255, 255, 255, 0.9);
+        backdrop-filter: blur(5px);
+    }
+
+    .form-control:focus {
+        border-color: #6366f1;
+        box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.1);
+        background: white;
+        transform: translateY(-1px);
+    }
+
+    .form-label {
+        font-weight: 500;
+        color: #4b5563;
+        margin-bottom: 0.5rem;
+    }
+
+    .form-text {
+        color: #6b7280;
+    }
+
+    @keyframes shine {
+        0% { transform: translateX(-100%); }
+        100% { transform: translateX(100%); }
+    }
+
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(20px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    .dashboard-card {
+        animation: fadeIn 0.5s ease-out;
+        animation-fill-mode: both;
+    }
+
+    .dashboard-card:nth-child(1) { animation-delay: 0.1s; }
+    .dashboard-card:nth-child(2) { animation-delay: 0.2s; }
+    .dashboard-card:nth-child(3) { animation-delay: 0.3s; }
+    .dashboard-card:nth-child(4) { animation-delay: 0.4s; }
+
+    /* Empty state styling */
+    .text-muted {
+        color: #6b7280 !important;
+    }
+
+    .text-muted i {
+        font-size: 1.25rem;
+        margin-right: 0.5rem;
+        color: #6366f1;
+    }
+
+    /* File input styling */
+    .form-control[type="file"] {
+        padding: 0.5rem;
+        background: rgba(255, 255, 255, 0.8);
+    }
+
+    .form-control[type="file"]::-webkit-file-upload-button {
+        background: var(--primary-gradient);
+        color: white;
+        padding: 0.5rem 1rem;
+        border: none;
+        border-radius: 0.5rem;
+        margin-right: 1rem;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+
+    .form-control[type="file"]::-webkit-file-upload-button:hover {
+        background: var(--secondary-gradient);
+    }
+</style>
+
 <div class="row">
-    <div class="col-md-12 mb-4">
-        <div class="card">
-            <div class="card-header d-flex justify-content-between align-items-center">
-                <h4 class="card-title mb-0">Welcome, {{ session.name }}</h4>
-                <a href="{{ url_for('donate') }}" class="btn btn-primary">
-                    <i class="fas fa-hand-holding-usd"></i> Contribute to Department Fund
-                </a>
+    <div class="col-md-12">
+        <div class="welcome-card">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h4>Welcome, {{ session.name }}! </h4>
+                    <p class="mb-0"> overview of your academic progress and activities.</p>
+                </div>
+                <div>
+                    <!-- <button type="button" class="btn btn-light me-2" data-bs-toggle="modal" data-bs-target="#applyLeaveModal">
+                        <i class="fas fa-calendar-plus me-2"></i> Apply Leave
+                    </button> -->
+                    <button type="button" class="btn btn-light me-2" data-bs-toggle="modal" data-bs-target="#uploadCertificateModal">
+                        <i class="fas fa-file-upload me-2"></i> Upload Medical Certificate
+                    </button>
+                    <a href="{{ url_for('donate') }}" class="btn floating">
+                        <i class="fas fa-hand-holding-usd me-2"></i> Contribute to Department Fund
+                    </a>
+                </div>
             </div>
         </div>
     </div>
 </div>
 
 <div class="row">
-    <!-- Attendance Section -->
+    <!-- Attendance Statistics Card -->
+    <div class="col-md-12 mb-4">
+        <div class="card">
+            <div class="card-header">
+                <h4 class="card-title mb-0">Attendance Overview</h4>
+            </div>
+            <div class="card-body">
+                {% set attendance_count = attendances|length %}
+                {% set present_count = attendances|selectattr('status', 'equalto', 'Present')|list|length %}
+                {% set percentage = (present_count / attendance_count * 100) if attendance_count > 0 else 0 %}
+                
+                <div class="row">
+                    <div class="col-md-4">
+                        <div class="text-center">
+                            <h5>Total Classes</h5>
+                            <h3>{{ attendance_count }}</h3>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="text-center">
+                            <h5>Present</h5>
+                            <h3>{{ present_count }}</h3>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="text-center">
+                            <h5>Attendance Percentage</h5>
+                            <div class="progress" style="height: 30px;">
+                                <div class="progress-bar {% if percentage >= 75 %}bg-success{% elif percentage >= 50 %}bg-warning{% else %}bg-danger{% endif %}" 
+                                     role="progressbar" 
+                                     style="width: {{ percentage }}%"
+                                     aria-valuenow="{{ percentage }}" 
+                                     aria-valuemin="0" 
+                                     aria-valuemax="100">
+                                    {{ "%.1f"|format(percentage) }}%
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Attendance -->
     <div class="col-md-6 mb-4">
         <div class="card">
             <div class="card-header">
-                <h5 class="card-title mb-0">Recent Attendance</h5>
+                <h4 class="card-title mb-0">Recent Attendance</h4>
             </div>
             <div class="card-body">
                 <div class="table-responsive">
-                    <table class="table">
+                    <table class="table table-striped">
                         <thead>
                             <tr>
                                 <th>Date</th>
@@ -33,15 +402,19 @@
                             </tr>
                         </thead>
                         <tbody>
-                            {% for attendance in attendances %}
+                            {% for attendance in attendances[:5] %}
                             <tr>
                                 <td>{{ attendance.date.strftime('%Y-%m-%d') }}</td>
                                 <td>
-                                    <span class="badge bg-{{ 'success' if attendance.status == 'Present' else 'danger' }}">
+                                    <span class="badge {% if attendance.status == 'Present' %}bg-success{% else %}bg-danger{% endif %}">
                                         {{ attendance.status }}
                                     </span>
                                 </td>
                             </tr>
+                            {% else %}
+                            <tr>
+                                <td colspan="2" class="text-center">No attendance records found.</td>
+                            </tr>
                             {% endfor %}
                         </tbody>
                     </table>
@@ -50,37 +423,52 @@
         </div>
     </div>
 
-    <!-- Leave Requests Section -->
+    <!-- Leave Requests -->
     <div class="col-md-6 mb-4">
         <div class="card">
-            <div class="card-header d-flex justify-content-between align-items-center">
-                <h5 class="card-title mb-0">Leave Requests</h5>
-                <button type="button" class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#applyLeaveModal">
-                    <i class="fas fa-plus"></i> Apply for Leave
-                </button>
+            <div class="card-header">
+                <div class="d-flex justify-content-between align-items-center">
+                    <h4 class="card-title mb-0">Recent Leave Requests</h4>
+                    <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#applyLeaveModal">
+                        <i class="fas fa-calendar-plus me-2"></i> Apply Leave
+                    </button>
+                </div>
             </div>
             <div class="card-body">
                 <div class="table-responsive">
-                    <table class="table">
+                    <table class="table table-striped">
                         <thead>
                             <tr>
                                 <th>Start Date</th>
                                 <th>End Date</th>
-                                <th>Reason</th>
                                 <th>Status</th>
+                                <th>Actions</th>
                             </tr>
                         </thead>
                         <tbody>
-                            {% for request in leave_requests %}
+                            {% for leave in leave_requests[:5] %}
                             <tr>
-                                <td>{{ request.start_date.strftime('%Y-%m-%d') }}</td>
-                                <td>{{ request.end_date.strftime('%Y-%m-%d') }}</td>
-                                <td>{{ request.reason }}</td>
+                                <td>{{ leave.start_date.strftime('%Y-%m-%d') }}</td>
+                                <td>{{ leave.end_date.strftime('%Y-%m-%d') }}</td>
                                 <td>
-                                    <span class="badge bg-{{ 'success' if request.status == 'approved' else 'warning' if request.status == 'pending' else 'danger' }}">
-                                        {{ request.status.title() }}
+                                    <span class="badge {% if leave.status == 'approved' %}bg-success{% elif leave.status == 'pending' %}bg-warning{% else %}bg-danger{% endif %}">
+                                        {{ leave.status }}
                                     </span>
                                 </td>
+                                <td>
+                                    {% if leave.status == 'pending' %}
+                                    <form action="{{ url_for('delete_leave_request') }}" method="POST" class="d-inline">
+                                        <input type="hidden" name="leave_id" value="{{ leave.id }}">
+                                        <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Are you sure you want to delete this leave request?')">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </form>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% else %}
+                            <tr>
+                                <td colspan="4" class="text-center">No leave requests found.</td>
                             </tr>
                             {% endfor %}
                         </tbody>
@@ -90,35 +478,44 @@
         </div>
     </div>
 
-    <!-- Medical Certificates Section -->
-    <div class="col-md-6 mb-4">
+    <!-- Medical Certificates -->
+    <div class="col-md-12 mb-4">
         <div class="card">
-            <div class="card-header d-flex justify-content-between align-items-center">
-                <h5 class="card-title mb-0">Medical Certificates</h5>
-                <button type="button" class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#uploadCertificateModal">
-                    <i class="fas fa-upload"></i> Upload Certificate
-                </button>
+            <div class="card-header">
+                <h4 class="card-title mb-0">Medical Certificates</h4>
             </div>
             <div class="card-body">
                 <div class="table-responsive">
-                    <table class="table">
+                    <table class="table table-striped">
                         <thead>
                             <tr>
                                 <th>Upload Date</th>
-                                <th>File</th>
-                                <th>Action</th>
+                                <th>Start Date</th>
+                                <th>End Date</th>
+                                <th>Actions</th>
                             </tr>
                         </thead>
                         <tbody>
                             {% for certificate in medical_certificates %}
                             <tr>
-                                <td>{{ certificate.upload_date.strftime('%Y-%m-%d %H:%M') }}</td>
-                                <td>{{ certificate.filename.split('_', 2)[2] }}</td>
+                                <td>{{ certificate.upload_date.strftime('%Y-%m-%d') }}</td>
+                                <td>{{ certificate.start_date.strftime('%Y-%m-%d') if certificate.start_date else 'N/A' }}</td>
+                                <td>{{ certificate.end_date.strftime('%Y-%m-%d') if certificate.end_date else 'N/A' }}</td>
                                 <td>
-                                    <a href="{{ url_for('serve_certificate', filename=certificate.filename) }}" class="btn btn-sm btn-primary" target="_blank">
-                                        <i class="fas fa-download"></i> Download
+                                    <a href="{{ url_for('serve_certificate', filename=certificate.filename) }}" class="btn btn-sm btn-info" target="_blank">
+                                        <i class="fas fa-eye"></i> View
                                     </a>
+                                    <form action="{{ url_for('delete_certificate') }}" method="POST" class="d-inline">
+                                        <input type="hidden" name="certificate_id" value="{{ certificate.id }}">
+                                        <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Are you sure you want to delete this certificate?')">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </form>
                                 </td>
+                            </tr>
+                            {% else %}
+                            <tr>
+                                <td colspan="4" class="text-center">No medical certificates found.</td>
                             </tr>
                             {% endfor %}
                         </tbody>
@@ -128,66 +525,42 @@
         </div>
     </div>
 
-    <!-- Upload Certificate Modal -->
-    <div class="modal fade" id="uploadCertificateModal" tabindex="-1" aria-labelledby="uploadCertificateModalLabel" aria-hidden="true">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="uploadCertificateModalLabel">Upload Medical Certificate</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <form method="POST" action="{{ url_for('upload_certificate') }}" enctype="multipart/form-data">
-                    <div class="modal-body">
-                        <div class="mb-3">
-                            <label for="certificate" class="form-label">Select Certificate File</label>
-                            <input type="file" class="form-control" id="certificate" name="certificate" accept=".pdf,.jpg,.jpeg,.png" required>
-                            <div class="form-text">Allowed file types: PDF, JPG, JPEG, PNG (Max size: 16MB)</div>
-                        </div>
-                    </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                        <button type="submit" class="btn btn-primary">Upload</button>
-                    </div>
-                </form>
-            </div>
-        </div>
-    </div>
-
-    <!-- Donations Section -->
-    <div class="col-md-6 mb-4">
+    <!-- Donations -->
+    <div class="col-md-12">
         <div class="card">
-            <div class="card-header d-flex justify-content-between align-items-center">
-                <h5 class="card-title mb-0">Your Contributions</h5>
-                <a href="{{ url_for('download_department_invoice') }}" class="btn btn-success btn-sm">
-                    <i class="fas fa-file-invoice"></i> Download Department Invoice
-                </a>
+            <div class="card-header">
+                <h4 class="card-title mb-0">Recent Donations</h4>
             </div>
             <div class="card-body">
                 <div class="table-responsive">
-                    <table class="table">
+                    <table class="table table-striped">
                         <thead>
                             <tr>
                                 <th>Date</th>
                                 <th>Amount</th>
                                 <th>Status</th>
-                                <th>Action</th>
+                                <th>Actions</th>
                             </tr>
                         </thead>
                         <tbody>
                             {% for donation in donations %}
                             <tr>
-                                <td>{{ donation.donation_date.strftime('%Y-%m-%d %H:%M') }}</td>
-                                <td>₹{{ "%.2f"|format(donation.amount) }}</td>
+                                <td>{{ donation.donation_date.strftime('%Y-%m-%d') }}</td>
+                                <td>₹{{ donation.amount }}</td>
                                 <td>
                                     <span class="badge bg-{{ 'success' if donation.status == 'completed' else 'danger' }}">
-                                        {{ donation.status.title() }}
+                                        {{ donation.status }}
                                     </span>
                                 </td>
                                 <td>
-                                    <a href="{{ url_for('download_invoice', donation_id=donation.id) }}" class="btn btn-sm btn-primary">
-                                        <i class="fas fa-file-invoice"></i> Invoice
+                                    <a href="{{ url_for('download_invoice', donation_id=donation.id) }}" class="btn btn-sm btn-info">
+                                        <i class="fas fa-download"></i> Invoice
                                     </a>
                                 </td>
+                            </tr>
+                            {% else %}
+                            <tr>
+                                <td colspan="4" class="text-center">No donations found.</td>
                             </tr>
                             {% endfor %}
                         </tbody>
@@ -199,31 +572,68 @@
 </div>
 
 <!-- Apply Leave Modal -->
-<div class="modal fade" id="applyLeaveModal" tabindex="-1" aria-labelledby="applyLeaveModalLabel" aria-hidden="true">
+<div class="modal fade" id="applyLeaveModal" tabindex="-1">
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title" id="applyLeaveModalLabel">Apply for Leave</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                <h5 class="modal-title">Apply for Leave</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
-            <form method="POST" action="{{ url_for('apply_leave') }}">
+            <form action="{{ url_for('apply_leave') }}" method="POST" enctype="multipart/form-data">
                 <div class="modal-body">
                     <div class="mb-3">
-                        <label for="start_date" class="form-label">Start Date</label>
-                        <input type="date" class="form-control" id="start_date" name="start_date" required>
+                        <label class="form-label">Start Date</label>
+                        <input type="date" class="form-control" name="start_date" required>
                     </div>
                     <div class="mb-3">
-                        <label for="end_date" class="form-label">End Date</label>
-                        <input type="date" class="form-control" id="end_date" name="end_date" required>
+                        <label class="form-label">End Date</label>
+                        <input type="date" class="form-control" name="end_date" required>
                     </div>
                     <div class="mb-3">
-                        <label for="reason" class="form-label">Reason for Leave</label>
-                        <textarea class="form-control" id="reason" name="reason" rows="3" required></textarea>
+                        <label class="form-label">Reason</label>
+                        <textarea class="form-control" name="reason" rows="3" required></textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Medical Certificate (Optional)</label>
+                        <input type="file" class="form-control" name="certificate" accept=".pdf,.jpg,.jpeg,.png">
                     </div>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                    <button type="submit" class="btn btn-primary">Submit Request</button>
+                    <button type="submit" class="btn btn-primary">Submit</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Upload Certificate Modal -->
+<div class="modal fade" id="uploadCertificateModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Upload Medical Certificate</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form action="{{ url_for('upload_certificate') }}" method="POST" enctype="multipart/form-data">
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label">Medical Certificate</label>
+                        <input type="file" class="form-control" name="certificate" accept=".pdf,.jpg,.jpeg,.png" required>
+                        <div class="form-text">Upload a PDF or image file of your medical certificate.</div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Start Date</label>
+                        <input type="date" class="form-control" name="start_date" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">End Date</label>
+                        <input type="date" class="form-control" name="end_date" required>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Upload</button>
                 </div>
             </form>
         </div>
@@ -233,16 +643,111 @@
 
 {% block scripts %}
 <script>
-document.addEventListener('DOMContentLoaded', function() {
-    // Set min date for date inputs to today
-    const today = new Date().toISOString().split('T')[0];
-    document.getElementById('start_date').min = today;
-    document.getElementById('end_date').min = today;
+    document.addEventListener('DOMContentLoaded', function() {
+        // Remove animated background
+        const animatedBg = document.querySelector('.animated-bg');
+        if (animatedBg) {
+            animatedBg.remove();
+        }
 
-    // Ensure end date is not before start date
-    document.getElementById('start_date').addEventListener('change', function() {
-        document.getElementById('end_date').min = this.value;
+        // Simplified scroll reveal animation
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('reveal');
+                }
+            });
+        }, {
+            threshold: 0.1
+        });
+
+        document.querySelectorAll('.scroll-reveal').forEach(element => {
+            observer.observe(element);
+        });
+
+        // Simplified hover effects for table rows
+        const tableRows = document.querySelectorAll('tbody tr');
+        tableRows.forEach(row => {
+            row.addEventListener('mouseenter', function() {
+                this.style.backgroundColor = 'rgba(99, 102, 241, 0.05)';
+            });
+            row.addEventListener('mouseleave', function() {
+                this.style.backgroundColor = '';
+            });
+        });
+
+        // Simplified modal animations
+        const modals = document.querySelectorAll('.modal');
+        modals.forEach(modal => {
+            modal.addEventListener('show.bs.modal', function() {
+                this.querySelector('.modal-content').style.transform = 'scale(0.95)';
+                setTimeout(() => {
+                    this.querySelector('.modal-content').style.transform = 'scale(1)';
+                }, 50);
+            });
+        });
+
+        // Simplified form control animations
+        const formControls = document.querySelectorAll('.form-control');
+        formControls.forEach(control => {
+            control.addEventListener('focus', function() {
+                this.parentElement.style.transform = 'translateY(-1px)';
+            });
+            control.addEventListener('blur', function() {
+                this.parentElement.style.transform = 'translateY(0)';
+            });
+        });
+
+        // Set min date for date inputs to today
+        const today = new Date().toISOString().split('T')[0];
+        const dateInputs = document.querySelectorAll('input[type="date"]');
+        dateInputs.forEach(input => {
+            input.min = today;
+        });
+
+        // Ensure end date is not before start date for both forms
+        document.querySelectorAll('input[name="start_date"]').forEach(startDateInput => {
+            startDateInput.addEventListener('change', function() {
+                const endDateInput = this.closest('form').querySelector('input[name="end_date"]');
+                endDateInput.min = this.value;
+            });
+        });
+
+        // Validate forms before submission
+        document.querySelectorAll('form').forEach(form => {
+            form.addEventListener('submit', function(e) {
+                const startDate = this.querySelector('input[name="start_date"]');
+                const endDate = this.querySelector('input[name="end_date"]');
+                
+                if (startDate && endDate && startDate.value && endDate.value) {
+                    const start = new Date(startDate.value);
+                    const end = new Date(endDate.value);
+                    const today = new Date();
+                    today.setHours(0, 0, 0, 0);
+
+                    if (start < today) {
+                        e.preventDefault();
+                        alert('Cannot apply for leave on past dates');
+                        return;
+                    }
+
+                    if (end < start) {
+                        e.preventDefault();
+                        alert('End date cannot be before start date');
+                        return;
+                    }
+                }
+            });
+        });
+
+        // Check for existing pending leaves before showing the modal
+        document.querySelector('#applyLeaveModal').addEventListener('show.bs.modal', function(e) {
+            const pendingLeaves = document.querySelectorAll('.badge.bg-warning');
+            if (pendingLeaves.length > 0) {
+                e.preventDefault();
+                alert('You already have a pending leave request. Please wait for it to be approved or rejected before applying for another leave.');
+            }
+        });
     });
-});
 </script>
 {% endblock %} 

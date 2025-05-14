@@ -6,9 +6,14 @@
 <div class="container mt-4">
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h2>Teacher Dashboard</h2>
-        <a href="{{ url_for('mark_attendance_page') }}" class="btn btn-success">
-            <i class="fas fa-calendar-check"></i> Mark Attendance
-        </a>
+        <div>
+            <a href="{{ url_for('view_certificates') }}" class="btn btn-info me-2">
+                <i class="fas fa-file-medical"></i> View Medical Certificates
+            </a>
+            <a href="{{ url_for('mark_attendance_page') }}" class="btn btn-success">
+                <i class="fas fa-calendar-check"></i> Mark Attendance
+            </a>
+        </div>
     </div>
     
     <!-- Search Box -->
@@ -175,7 +180,7 @@
                         </tr>
                     </thead>
                     <tbody>
-                        {% for request in leave_requests %}
+                        {% for request in leave_requests if not request.medical_certificate %}
                         <tr>
                             <td>{{ request.student.name }}</td>
                             <td>{{ request.start_date.strftime('%Y-%m-%d') }}</td>
@@ -188,13 +193,11 @@
                             </td>
                             <td>
                                 {% if request.status == 'pending' %}
-                                <form method="POST" action="{{ url_for('update_leave') }}" class="d-inline">
-                                    <input type="hidden" name="leave_id" value="{{ request.id }}">
+                                <form method="POST" action="{{ url_for('update_leave', leave_id=request.id) }}" class="d-inline">
                                     <input type="hidden" name="status" value="approved">
                                     <button type="submit" class="btn btn-sm btn-success">Approve</button>
                                 </form>
-                                <form method="POST" action="{{ url_for('update_leave') }}" class="d-inline">
-                                    <input type="hidden" name="leave_id" value="{{ request.id }}">
+                                <form method="POST" action="{{ url_for('update_leave', leave_id=request.id) }}" class="d-inline">
                                     <input type="hidden" name="status" value="rejected">
                                     <button type="submit" class="btn btn-sm btn-danger">Reject</button>
                                 </form>
@@ -203,7 +206,67 @@
                         </tr>
                         {% else %}
                         <tr>
-                            <td colspan="6" class="text-center">No leave requests found</td>
+                            <td colspan="6" class="text-center">No normal leave requests found</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Medical Leave Requests -->
+    <div class="card mb-4">
+        <div class="card-header">
+            <h5 class="mb-0">Medical Leave Requests</h5>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>Student</th>
+                            <th>Start Date</th>
+                            <th>End Date</th>
+                            <th>Reason</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for request in leave_requests if request.medical_certificate %}
+                        <tr>
+                            <td>{{ request.student.name }}</td>
+                            <td>{{ request.start_date.strftime('%Y-%m-%d') }}</td>
+                            <td>{{ request.end_date.strftime('%Y-%m-%d') }}</td>
+                            <td>{{ request.reason }}</td>
+                            <td>
+                                <span class="badge bg-{{ 'success' if request.status == 'approved' else 'danger' if request.status == 'rejected' else 'warning' }}">
+                                    {{ request.status }}
+                                </span>
+                            </td>
+                            <td>
+                                {% if request.medical_certificate %}
+                                <a href="{{ url_for('serve_certificate', filename=request.medical_certificate.filename) }}" 
+                                   class="btn btn-sm btn-info me-1" target="_blank" title="View Medical Certificate">
+                                    <i class="fas fa-file-medical"></i> View Certificate
+                                </a>
+                                {% endif %}
+                                {% if request.status == 'pending' %}
+                                <form method="POST" action="{{ url_for('update_leave', leave_id=request.id) }}" class="d-inline">
+                                    <input type="hidden" name="status" value="approved">
+                                    <button type="submit" class="btn btn-sm btn-success">Approve</button>
+                                </form>
+                                <form method="POST" action="{{ url_for('update_leave', leave_id=request.id) }}" class="d-inline">
+                                    <input type="hidden" name="status" value="rejected">
+                                    <button type="submit" class="btn btn-sm btn-danger">Reject</button>
+                                </form>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% else %}
+                        <tr>
+                            <td colspan="6" class="text-center">No medical leave requests found</td>
                         </tr>
                         {% endfor %}
                     </tbody>
